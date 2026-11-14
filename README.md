@@ -1,8 +1,8 @@
 # dsh-codex-effort-slider — 性能与交互改进分支
 
-用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的推理等级滑条，基于 [Microqian2th/dsh-codex-effort-slider](https://github.com/Microqian2th/dsh-codex-effort-slider) 的已发布 **1.1.4** 改进。
+用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的推理等级滑条，基于 [Microqian2th/dsh-codex-effort-slider](https://github.com/Microqian2th/dsh-codex-effort-slider) 的已发布 **1.1.4** 改进，并并入上游 **1.1.5** 的两处稳妥修复（速度下限、轨道宽度诊断）。
 
-> 这是 [Yutai233 的改进分支](https://github.com/Yutai233/dsh-codex-effort-slider/tree/perf/slider-preview-animation)，不代表上游已合并或发布。初次整合基线为 `fc5a994`。保留原作者、MIT 许可证和插件包标识；npm 同名包仍指向上游发行版，不能用它判断是否装到了本分支。
+> 这是 [Yutai233 的改进分支](https://github.com/Yutai233/dsh-codex-effort-slider)，不代表上游已合并或发布。初次整合基线为 `fc5a994`。保留原作者、MIT 许可证和插件包标识；npm 同名包仍指向上游发行版，不能用它判断是否装到了本分支。本地安装后的版本号为 `1.1.6`。
 
 ## 使用行为
 
@@ -53,8 +53,9 @@
 ### 其他有意改变的观感
 
 - 跨档改为松手确认，不再立即写回宿主。
-- 粒子速度固定为原 High 档基准，简洁模式仍放缓；密度随位置变化。
+- 粒子速度固定为原 High 档基准，简洁模式仍放缓；密度随位置变化。（`speedFor` 的 0.55× 下限已按上游 1.1.5 同步，但固定速率下不参与实际计时。）
 - 渐变固定在轨道位置，不再逐帧拉伸到填充终点。
+- 诊断导出增加 `w`（轨道实际宽度），用于量化判断“拖动时滑条像被拉伸”是否由轨道重排引起。
 
 这些不只是零行为变化的内部重构。
 
@@ -90,19 +91,29 @@ npm run test:border
 
 ## 安装本分支
 
-修复在 `perf/slider-preview-animation`，尚未合入本 Fork 的 `main`。
+本分支的修复已在 `main`（`perf/slider-preview-animation` 已通过 PR #1 合入，两棵提交树一致）。
 
-推荐 [下载分支 ZIP](https://github.com/Yutai233/dsh-codex-effort-slider/archive/refs/heads/perf/slider-preview-animation.zip)，解压到固定位置，在 DSH **设置 → 插件 → 添加插件** 中使用包含根目录 `package.json` 的本地目录。
+推荐 [下载 main ZIP](https://github.com/Yutai233/dsh-codex-effort-slider/archive/refs/heads/main.zip)，解压到固定位置，在 DSH **设置 → 插件 → 添加插件** 中使用包含根目录 `package.json` 的本地目录。
 
 支持 GitHub 分支来源的插件面板也可使用：
 
 ```text
-github:Yutai233/dsh-codex-effort-slider#perf/slider-preview-animation
+github:Yutai233/dsh-codex-effort-slider#main
 ```
 
-不要省略分支名，也不要同时启用上游版和改进版。已安装上游版时先通过插件面板切换来源并备份配置。不同 DSH 版本界面可能不同；修改后完全退出并重开 DSH，只刷新页面未必重新读取宿主缓存。
+不要同时启用上游版和改进版。已安装上游版时先通过插件面板切换来源并备份配置。不同 DSH 版本界面可能不同；修改后完全退出并重开 DSH，只刷新页面未必重新读取宿主缓存。
 
-原项目安装脚本没有在本次重写或重新验证；不要为测试直接改写真实 profile。
+### 桌面 profile 的本地开发安装（link + Junction）
+
+桌面版 DSH 的 profile 由 Electron 管理，`dsh plugin --profile desktop` 会被拒绝。与 `dsh-daily-report` 相同的做法是把插件放在固定目录、让 profile 以 `link:` 依赖指向它：
+
+1. profile 的 `package.json` 依赖改为 `"dsh-codex-effort-slider": "link:E:/Deepseek_harness/workplace/dsh-codex-effort-slider"`（正斜杠）。
+2. 在 profile 目录执行 `pnpm install`，由 pnpm 在 `node_modules/dsh-codex-effort-slider` 生成指向该目录的链接并同步 `pnpm-lock.yaml`。
+3. 确认 `dsh.profile.bundles` 中仍有插件名，然后完全退出并重开 DSH。
+
+这样改完 `lib/client.js` 只需重启 DSH，不必重新安装。卸载时把依赖改回 npm 版本（如 `1.1.5`）并重新 `pnpm install` 即可。
+
+仓库根目录的 `install-profile.ps1` / `install.cmd` 是上游继承脚本，本次未重新验收；优先用上面的手动步骤。
 
 ## 打包与预览
 

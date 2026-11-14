@@ -570,7 +570,7 @@ section("10. 位置驱动的色彩与粒子（蓝 → 紫 → 深紫，粒子越
   // ── 速率：high 档 = 1×（用户实测"现在这个速度刚刚好"），最高档 = 2×
   near(internals.speedFor(H), 1, "[10] high 档速率 = 1×（保持现在的速度）");
   near(internals.speedFor(1), 2, "[10] 最高档速率 = 2×");
-  near(internals.speedFor(0), 0.35, "[10] 左端有 0.35× 下限（不会变成静止）");
+  near(internals.speedFor(0), 0.55, "[10] 左端有 0.55× 下限（不会变成静止，与上游 1.1.5 一致）");
   ok(internals.speedFor(0.9) > internals.speedFor(0.7), "[10] 速率随位置递增");
 
   // ── 渲染出来的东西要跟这些函数一致
